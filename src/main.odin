@@ -17,13 +17,9 @@ event: sdl.Event
 main :: proc() {
 
 	chip8 := c8.Chip8{}
-	chip8.registers.SP = 0
+	c8.init(&chip8)
 
-	c8.stack_push(&chip8, 0xff)
-	c8.stack_push(&chip8, 0xaa)
-
-	fmt.printf("::%x\n", c8.stack_pop(&chip8))
-	fmt.printf("::%x\n", c8.stack_pop(&chip8))
+	c8.draw_sprite(&chip8.screen, 0, 0, &chip8.memory.memory[0x00], 5)
 
 
 	assert(sdl.Init(sdl.INIT_VIDEO) == 0, sdl.GetErrorString())
@@ -54,9 +50,27 @@ main :: proc() {
 			}
 
 			if event.type == sdl.EventType.KEYDOWN {
+				k := u8(event.key.keysym.sym)
+				vkey := c8.map_keyboard(k)
+
+				if vkey != -1 {
+					c8.key_down(&chip8.keyboard, vkey)
+					fmt.printf("%x : Key is Down\n", vkey)
+				}
 				#partial switch event.key.keysym.scancode {
 				case .ESCAPE:
 					break game_loop
+				}
+
+
+			}
+			if event.type == sdl.EventType.KEYUP {
+				k := u8(event.key.keysym.sym)
+				vkey := c8.map_keyboard(k)
+
+				if vkey != -1 {
+					c8.key_up(&chip8.keyboard, vkey)
+					fmt.printf("%x : Key is Down\n", vkey)
 				}
 			}
 		}
@@ -64,9 +78,24 @@ main :: proc() {
 		sdl.SetRenderDrawColor(renderer, 0, 0, 0, 0)
 		sdl.RenderClear(renderer)
 		sdl.SetRenderDrawColor(renderer, 255, 255, 255, 0)
-		rect: sdl.Rect = sdl.Rect{0, 0, 40, 40}
 
-		sdl.RenderFillRect(renderer, &rect)
+		for x := 0; x < config.SCREEN_WIDTH; x += 1 {
+			for y := 0; y < config.SCREEN_HEIGHT; y += 1 {
+
+				if c8.screen_is_set(&chip8.screen, x, y) {
+					rect: sdl.Rect = sdl.Rect {
+						i32(x * config.WINDOW_SCALING),
+						i32(y * config.WINDOW_SCALING),
+						config.WINDOW_SCALING,
+						config.WINDOW_SCALING,
+					}
+					sdl.RenderFillRect(renderer, &rect)
+				}
+
+
+			}
+		}
+
 		sdl.RenderPresent(renderer)
 	}
 	fmt.println("Odin-8 Emulator!")
