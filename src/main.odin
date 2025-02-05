@@ -3,6 +3,7 @@ package main
 import c8 "chip8"
 import "config"
 import "core:fmt"
+import "core:time"
 import sdl "vendor:sdl2"
 import sdl_image "vendor:sdl2/image"
 
@@ -97,7 +98,16 @@ main :: proc() {
 		}
 
 		sdl.RenderPresent(renderer)
+
+		if chip8.registers.DT > 0 {
+			time.sleep(time.Millisecond * 100)
+			chip8.registers.DT -= 1
+		}
+
+		if chip8.registers.ST > 0 {
+			// beep(8000, 100) TODO: Need to implement sound
+			chip8.registers.ST -= 1
+		}
 	}
-	fmt.println("Odin-8 Emulator!")
 
 }
