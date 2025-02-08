@@ -22,6 +22,14 @@ screen_check_bounds :: proc(x: int, y: int) {
 	assert(x >= 0 && x < config.SCREEN_WIDTH && y >= 0 && y < config.SCREEN_HEIGHT)
 }
 
+clear_screen :: proc(screen: ^Screen) {
+	for y := 0; y < config.SCREEN_HEIGHT; y += 1 {
+		for x := 0; x < config.SCREEN_WIDTH; x += 1 {
+			screen.pixels[y][x] = false
+		}
+	}
+}
+
 
 draw_sprite :: proc(screen: ^Screen, x: int, y: int, sprite: ^u8, num: int) -> bool {
 	pixel_collision := false

@@ -3,9 +3,11 @@ package main
 import c8 "chip8"
 import "config"
 import "core:fmt"
+import "core:os"
 import "core:time"
 import sdl "vendor:sdl2"
 import sdl_image "vendor:sdl2/image"
+
 
 WINDOW_WIDTH :: 640
 WINDOW_HEIGHT :: 320
@@ -19,6 +21,28 @@ main :: proc() {
 
 	chip8 := c8.Chip8{}
 	c8.init(&chip8)
+
+	rom_data, ok := os.read_entire_file("INVADERS")
+	if !ok {
+		fmt.println("Failed to load ROM")
+		return
+	}
+	defer delete(rom_data)
+
+	c8.load(&chip8, raw_data(rom_data), i64(len(rom_data)))
+
+	chip8.registers.V[0] = 200
+	chip8.registers.V[1] = 60
+
+	c8.exec(&chip8, 0x8014)
+	fmt.printf("::%i\n", chip8.registers.V[0])
+	fmt.printf("::-::%i\n", chip8.registers.V[0x0f])
+
+
+	// hello_str := string("Hello World")
+	// data := transmute([]u8)hello_str
+	// c8.load(&chip8, raw_data(data), i64(len(data)))
+	// c8.load(&chip8, "Hello World", size_of("Hello World"))
 
 	c8.draw_sprite(&chip8.screen, 0, 0, &chip8.memory.memory[0x00], 5)
 
@@ -108,6 +132,12 @@ main :: proc() {
 			// beep(8000, 100) TODO: Need to implement sound
 			chip8.registers.ST -= 1
 		}
+
+		opcode := c8.memory_get_short(&chip8.memory, int(chip8.registers.PC))
+		chip8.registers.PC += 2
+		c8.exec(&chip8, opcode)
+
+		// fmt.printf("%04x\n", opcode)
 	}
 
 }
