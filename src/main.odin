@@ -31,21 +31,6 @@ main :: proc() {
 
 	c8.load(&chip8, raw_data(rom_data), i64(len(rom_data)))
 
-	chip8.registers.V[0] = 200
-	chip8.registers.V[1] = 60
-
-	c8.exec(&chip8, 0x8014)
-	fmt.printf("::%i\n", chip8.registers.V[0])
-	fmt.printf("::-::%i\n", chip8.registers.V[0x0f])
-
-
-	// hello_str := string("Hello World")
-	// data := transmute([]u8)hello_str
-	// c8.load(&chip8, raw_data(data), i64(len(data)))
-	// c8.load(&chip8, "Hello World", size_of("Hello World"))
-
-	c8.draw_sprite(&chip8.screen, 0, 0, &chip8.memory.memory[0x00], 5)
-
 
 	assert(sdl.Init(sdl.INIT_VIDEO) == 0, sdl.GetErrorString())
 	defer sdl.Quit()
@@ -66,6 +51,7 @@ main :: proc() {
 	renderer = sdl.CreateRenderer(window, -1, RENDER_FLAGS)
 	assert(renderer != nil, sdl.GetErrorString())
 	defer sdl.DestroyRenderer(renderer)
+
 
 	game_loop: for {
 		// Input
@@ -121,10 +107,9 @@ main :: proc() {
 			}
 		}
 
-		sdl.RenderPresent(renderer)
 
 		if chip8.registers.DT > 0 {
-			time.sleep(time.Millisecond * 100)
+			time.sleep(time.Millisecond * 1)
 			chip8.registers.DT -= 1
 		}
 
@@ -133,11 +118,12 @@ main :: proc() {
 			chip8.registers.ST -= 1
 		}
 
+
 		opcode := c8.memory_get_short(&chip8.memory, int(chip8.registers.PC))
 		chip8.registers.PC += 2
 		c8.exec(&chip8, opcode)
 
-		// fmt.printf("%04x\n", opcode)
+		sdl.RenderPresent(renderer)
 	}
 
 }

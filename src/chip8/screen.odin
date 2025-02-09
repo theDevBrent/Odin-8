@@ -31,8 +31,8 @@ clear_screen :: proc(screen: ^Screen) {
 }
 
 
-draw_sprite :: proc(screen: ^Screen, x: int, y: int, sprite: ^u8, num: int) -> bool {
-	pixel_collision := false
+draw_sprite :: proc(screen: ^Screen, x: int, y: int, sprite: ^u8, num: int) -> u8 {
+	pixel_collision: u8 = 0
 
 	for ly := 0; ly < num; ly += 1 {
 		c := ((^u8)(uintptr(sprite) + uintptr(ly)))^
@@ -45,7 +45,7 @@ draw_sprite :: proc(screen: ^Screen, x: int, y: int, sprite: ^u8, num: int) -> b
 			screen_x := (lx + x) % config.SCREEN_WIDTH
 
 			if screen.pixels[screen_y][screen_x] {
-				pixel_collision = true
+				pixel_collision = 1
 			}
 
 			screen.pixels[screen_y][screen_x] ~= true
