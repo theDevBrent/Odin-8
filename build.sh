@@ -2,6 +2,7 @@ function build() {
     OUT_DIR="build"
     mkdir -p $OUT_DIR
     odin build src -out:$OUT_DIR/odin-8
+    cp -r ROMS $OUT_DIR
     echo "Build created in ${OUT_DIR}"
 }
 

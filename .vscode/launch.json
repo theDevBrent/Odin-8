@@ -6,7 +6,7 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/odin-8",
-            "args": [],
+            "args": ["INVADERS"],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
         }

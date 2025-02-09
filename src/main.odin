@@ -18,11 +18,16 @@ renderer: ^sdl.Renderer
 event: sdl.Event
 
 main :: proc() {
+	if len(os.args) < 2 {
+		fmt.println("Usage: program <rom_name>")
+		return
+	}
 
 	chip8 := c8.Chip8{}
 	c8.init(&chip8)
 
-	rom_data, ok := os.read_entire_file("INVADERS")
+	rom_filename := fmt.tprintf("./ROMS/%s", os.args[1])
+	rom_data, ok := os.read_entire_file(rom_filename)
 	if !ok {
 		fmt.println("Failed to load ROM")
 		return
