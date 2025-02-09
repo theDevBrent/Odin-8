@@ -3,6 +3,7 @@ package chip8
 import "../config"
 import "base:runtime"
 import "core:fmt"
+import "core:math/rand"
 import "core:mem"
 
 Chip8 :: struct {
@@ -70,6 +71,21 @@ exec_extended :: proc(chip8: ^Chip8, opcode: u16) {
 		chip8.registers.V[x] += u8(kk)
 	case 0x8000:
 		exec_extended_eight(chip8, opcode)
+	// 9xy0 - SNE Vx, Vy
+	case 0x9000:
+		if chip8.registers.V[x] != chip8.registers.V[y] {
+			chip8.registers.PC += 2
+		}
+	// Annn - LD I, addr
+	case 0xA000:
+		chip8.registers.I = nnn
+	// Bnnn - JP V0, addr
+	case 0xB000:
+		chip8.registers.PC = nnn + u16(chip8.registers.V[0x00])
+	// Cxkk - RND Vx, byte
+	case 0xC000:
+		chip8.registers.V[x] = u8(u16(rand.int_max(255)) & kk)
+
 	}
 
 
@@ -104,11 +120,20 @@ exec_extended_eight :: proc(chip8: ^Chip8, opcode: u16) {
 		chip8.registers.V[x] = u8(carry)
 	// 8xy5 Set Vx = Vx - Vy set VF = NOT borrow
 	case 0x05:
-		chip8.registers.V[0x0f] = 0
-		if chip8.registers.V[x] > chip8.registers.V[y] {
-			chip8.registers.V[0x0f] = 1
-		}
+		chip8.registers.V[0x0f] = chip8.registers.V[x] > chip8.registers.V[y]
 		chip8.registers.V[x] = chip8.registers.V[x] - chip8.registers.V[y]
+	// 8xy6 - SHR Vx {, Vy}
+	case 0x06:
+		chip8.registers.V[0x0f] = chip8.registers.V[x] & 0x01
+		chip8.registers.V[x] = chip8.registers.V[x] / 2
+	// 8xy7 - SUBN Vx, Vy
+	case 0x07:
+		chip8.registers.V[0x0f] = chip8.registers.V[y] > chip8.registers.V[x]
+		chip8.registers.V[x] = chip8.registers.V[y] - chip8.registers.V[x]
+	// 8xyE - SHL Vx {, Vy}
+	case 0x0E:
+		chip8.registers.V[0x0f] = chip8.registers.V[x] & 0x80
+		chip8.registers.V[x] = chip8.registers.V[x] * 2
 	}
 }
 
